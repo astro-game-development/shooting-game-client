@@ -1,6 +1,10 @@
 import { useEffect } from 'react';
 
-export default function useEvent(event: any, handler: any, passive = false) {
+export default function useTimeCount(
+  event: any,
+  handler: any,
+  passive = false
+) {
   useEffect(() => {
     window.addEventListener(event, handler, passive);
     return function cleanup() {

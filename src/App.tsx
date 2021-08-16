@@ -1,11 +1,9 @@
 import React from 'react';
+import { ShootingBoard } from './components/ShootingBoard';
+// import ShootingBoard2 from './components/ShootingBoard2';
 
 const App = () => {
-  return (
-    <div className="container">
-      <h1>2048</h1>
-    </div>
-  );
+  return <ShootingBoard />;
 };
 
 export default App;

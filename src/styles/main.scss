@@ -1,3 +1,9 @@
+$purple-color: #3d087b;
+$pink-color: #f43b86;
+$pink2-color: hsl(336, 96%, 45%);
+$black-color: #11052c;
+$yello-color: #ffe459;
+
 @font-face {
   font-family: 'Clear Sans';
   src: url('./clear-sans.ttf') format('truetype');
@@ -20,8 +26,75 @@ body {
   height: 100vh;
   width: 100%;
 }
+.container-home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  .content-home {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  h1 {
+    margin: 0;
+    margin-bottom: 10px;
+  }
+  button {
+    font-size: 20px;
+    border: 0;
+    width: 100%;
+    padding: 10px 20px;
+    border-radius: 15px;
+    background-color: $pink-color;
+    color: white;
+    cursor: pointer;
+    transition: 0.5s all;
+  }
+  button:hover {
+    background-color: $pink2-color;
+  }
+  input {
+    padding: 10px 20px;
+    width: auto;
+    border-radius: 20px;
+    font-size: 30px;
+    border: 0;
+    margin-bottom: 10px;
+    color: $pink-color;
+    outline: none;
+    :active {
+      border: 0;
+    }
+    :focus {
+      border: 0;
+    }
+    :focus-visible {
+      border: 0;
+    }
+  }
+}
 
 h1 {
   text-align: center;
   color: white;
+}
+
+h2 {
+  text-align: center;
+  color: white;
+}
+
+.sound-config {
+  z-index: 10000;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  color: white;
+  font-size: 50px;
+  cursor: pointer;
+  :hover {
+    color: #f6d167;
+  }
 }

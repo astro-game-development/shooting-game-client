@@ -12,6 +12,8 @@ import {
 import _ from 'lodash';
 import useInterval from '../hooks/useInterval';
 import { getGame, shooting } from '../api/game.collection';
+import { AiFillSound } from 'react-icons/ai';
+import { ImVolumeMute2 } from 'react-icons/im';
 // import useEvent from '../hooks/useEvent';
 
 const AnimatedTarget = animated(Target);
@@ -30,7 +32,17 @@ var sound = new Howl({
   src: ['sound/shooting.wav'],
 });
 
+var soundBG = new Howl({
+  src: ['sound/fluidity-100-ig-edit-4558.mp3'],
+  loop: true,
+  volume: 0.02,
+  onend: function () {
+    console.log('Finished!');
+  },
+});
+
 export const ShootingBoard = () => {
+  const [bgMusic, setBgMusic] = useState(true);
   const [data, setData] = useState<dataInterface>({ target: [] });
   const [shake, setshake] = useState(true);
   const [shootingEffect, setEffect] = useState(false);
@@ -59,8 +71,10 @@ export const ShootingBoard = () => {
     setEffect(true);
     setEffect(false);
     setshake(true);
-    sound.volume(0.1);
-    // sound.play();
+    if (bgMusic) {
+      sound.volume(0.05);
+      sound.play();
+    }
     await shooting('6118cef01329b02f28c9578b', _idTarget);
     // const i = data.target.findIndex((item) => {
     //   return e === item._id;
@@ -106,29 +120,19 @@ export const ShootingBoard = () => {
     }
 
     setData({ ...data, target: answer });
-
-    // const IncludeNew = newTarget.filter((oldtarget) => {
-    //   removeNewTarget.map((item) => {
-    //     if (item._id === oldtarget._id) {
-    //       return false;
-    //     }
-    //   });
-    // });
-
-    // setData((prevstate) => ({
-    //   target: [...prevstate.target, newTarget],
-    // }));
-
-    // setData((oldstate) => {
-    //   return { ...oldstate, target: oldstate.target.filter(item => item) };
-    // });
-    // console.log(targetPoll.data.target);
-    // console.log(targetPoll.data.target._id);
   };
 
   useInterval(() => {
     fetchdata();
   }, 100);
+
+  useEffect(() => {
+    if (bgMusic) {
+      soundBG.play();
+    } else {
+      soundBG.stop();
+    }
+  }, [bgMusic]);
 
   return (
     <animated.div
@@ -199,6 +203,14 @@ export const ShootingBoard = () => {
           );
         }}
       </Transition>
+      <div
+        className="sound-config"
+        onClick={() => {
+          setBgMusic(!bgMusic);
+        }}
+      >
+        {bgMusic ? <AiFillSound /> : <ImVolumeMute2 />}
+      </div>
     </animated.div>
   );
 };

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const createGame = async (id: string) => {
+export const createGame = async () => {
   return await axios.get(`${process.env.REACT_APP_API_GAME}/createGame`, {});
 };
 

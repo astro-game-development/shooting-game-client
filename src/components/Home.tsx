@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { createGame } from '../api/game.collection';
+import { createGame, joinGame } from '../api/game.collection';
 
 function Home() {
   let history = useHistory();
@@ -13,9 +13,23 @@ function Home() {
       createGame()
         .then((res) => {
           console.log(res.data);
-          history.push(`/game/${res.data.idgame}`);
+          history.push(`/game?name=${name}&room=${res.data.room}`);
         })
         .catch((err) => {
+          console.log(err);
+        });
+    }
+  };
+
+  const onClickJoinGame = async (e: any) => {
+    e.preventDefault();
+    if (name && room) {
+      joinGame(room)
+        .then((res) => {
+          history.push(`/game?name=${name}&room=${room}`);
+        })
+        .catch((err) => {
+          setroom('');
           console.log(err);
         });
     }
@@ -47,13 +61,13 @@ function Home() {
         <input
           value={room}
           onChange={(e) => {
-            setroom(e.target.value);
+            setroom(e.target.value.toUpperCase());
           }}
           placeholder="Enter Room name"
           type="text"
           className="input-name"
         />
-        <button>Join</button>
+        <button onClick={onClickJoinGame}>Join</button>
       </div>
     </div>
   );

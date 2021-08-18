@@ -1,17 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Howl, Howler } from 'howler';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect } from 'react';
+import { Howl } from 'howler';
 import { useDocumentEvent, useWindowEvent } from '../hooks/useEvent';
+import io from 'socket.io-client';
 import Target from './Target';
-import {
-  animated,
-  useTransition,
-  Transition,
-  useSpring,
-  config,
-} from 'react-spring';
-import _ from 'lodash';
-import useInterval from '../hooks/useInterval';
-import { getGame, shooting } from '../api/game.collection';
+import { animated, Transition, useSpring } from 'react-spring';
 import { AiFillSound } from 'react-icons/ai';
 import { ImVolumeMute2 } from 'react-icons/im';
 import queryString from 'query-string';
@@ -25,10 +18,11 @@ interface targetInterface {
   x: number;
   y: number;
   size: number;
+  score: number;
 }
-interface dataInterface {
-  target: targetInterface[];
-}
+
+let socket;
+const URL = process.env.REACT_APP_SOCKET_API || 'http://localhost:5000';
 
 var sound = new Howl({
   src: ['sound/shooting.wav'],
@@ -43,11 +37,12 @@ var soundBG = new Howl({
   },
 });
 
-export const ShootingBoard = ({ location }) => {
+export const ShootingBoardSocket = ({ location }) => {
   const [bgMusic, setBgMusic] = useState(false);
   const [name, setName] = useState<any>('');
+  const [users, setUsers] = useState<any>([]);
   const [room, setRoom] = useState<any>('');
-  const [data, setData] = useState<dataInterface>({ target: [] });
+  const [data, setData] = useState<targetInterface[]>([]);
   const [shake, setshake] = useState(true);
   const [shootingEffect, setEffect] = useState(false);
   const [position, setPosition] = useState({
@@ -70,72 +65,84 @@ export const ShootingBoard = ({ location }) => {
     setIsPointerLocked(document.pointerLockElement === document.body);
   });
 
-  // useEffect
+  // useEffect room
   useEffect(() => {
     const { name, room } = queryString.parse(location.search);
+    socket = io(URL);
     setName(name);
     setRoom(room);
+    socket.on();
+    socket.emit('join', { name, room }, () => {});
+    return () => {
+      socket.disconnect();
+      socket.off();
+    };
   }, [location.search]);
 
+  // gamestate
+  useEffect(() => {
+    console.log('first');
+    socket.on('gameTargetsData', ({ user, targets }) => {
+      disPatchUser(user);
+      disPatchState(targets);
+    });
+
+    socket.on('shootingDone', (game: any) => {
+      disPatchUser(game.users);
+      disPatchState(game.targets);
+    });
+  }, []);
+
   const handleClickTarget = async (e) => {
-    const _idTarget = e;
+    const _id = e;
     setEffect(true);
     setEffect(false);
-    setshake(true);
+    // setshake(true);
     if (bgMusic) {
       sound.volume(0.05);
       sound.play();
     }
-    await shooting('611be93cba0ac44324f27397', _idTarget);
-    // const i = data.target.findIndex((item) => {
-    //   return e === item._id;
-    // });
-    // const targetArray = [...data.target];
-    // targetArray.splice(i, 1);
-    // setData({ target: targetArray });
+    socket.emit('shooting', { name, room, _id }, () => {});
   };
 
   // animation
-
   const { x } = useSpring({
     from: { x: 0 },
     x: shake ? 1 : 0,
     config: { duration: 1000 },
   });
 
-  const fetchdata = async () => {
-    const targetPoll = await getGame('611be93cba0ac44324f27397');
-    const newTarget = targetPoll.data.target;
-
-    const targetArray = [...data.target];
-
-    const result = targetArray.filter((item) => {
+  const disPatchState = (e: any) => {
+    setData((prev) => {
+      const newTarget = e;
+      const targetArray = prev;
+      const result = targetArray.filter((item) => {
+        for (let i = 0; i < newTarget.length; i++) {
+          if (item._id === newTarget[i]._id) {
+            return true;
+          }
+        }
+        return false;
+      });
+      const answer = [...result];
       for (let i = 0; i < newTarget.length; i++) {
-        if (item._id === newTarget[i]._id) {
-          return true;
+        let slot = false;
+        for (let x = 0; x < result.length; x++) {
+          if (newTarget[i]._id === result[x]._id) {
+            slot = true;
+          }
+        }
+        if (!slot) {
+          answer.push(newTarget[i]);
         }
       }
+      return answer;
     });
-
-    const answer = [...result];
-    for (let i = 0; i < newTarget.length; i++) {
-      let slot = false;
-      for (let x = 0; x < result.length; x++) {
-        if (newTarget[i]._id === result[x]._id) {
-          slot = true;
-        }
-      }
-      if (!slot) {
-        answer.push(newTarget[i]);
-      }
-    }
-
-    setData({ ...data, target: answer });
   };
 
-  useInterval(() => {
-    fetchdata();
-  }, 100);
+  const disPatchUser = (e: any) => {
+    setUsers(e);
+  };
 
   useEffect(() => {
     if (bgMusic) {
@@ -194,7 +201,7 @@ export const ShootingBoard = ({ location }) => {
         );
       })} */}
       <Transition
-        items={data.target}
+        items={data}
         from={{ opacity: 0, size: 0 }}
         enter={{ opacity: 1, size: 1 }}
         leave={{ opacity: 0, size: 0 }}
@@ -203,10 +210,11 @@ export const ShootingBoard = ({ location }) => {
         {(props, target) => {
           return (
             <AnimatedTarget
+              score={target.score}
               style={props}
               _id={target._id}
               onClick={handleClickTarget}
-              key={props._id}
+              key={target._id}
               x={target.x - position.x}
               y={target.y - position.y}
               size={target.size}
@@ -223,10 +231,24 @@ export const ShootingBoard = ({ location }) => {
       >
         {bgMusic ? <AiFillSound /> : <ImVolumeMute2 />}
       </div>
+      <UserBoard users={users} />
     </animated.div>
   );
 };
 
 const CrossHair = () => {
   return <div className="crossHair" />;
+};
+
+const UserBoard = ({ users }) => {
+  // console.log(users);
+  return (
+    <div className="user-board">
+      {users.map((e) => (
+        <h3>
+          {e.name.slice(0, 10)} : {e.score} score
+        </h3>
+      ))}
+    </div>
+  );
 };

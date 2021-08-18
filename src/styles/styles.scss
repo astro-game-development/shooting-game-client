@@ -66,13 +66,21 @@
   top: 0;
   left: 0;
   // background-color: #f43b86;
-  background-image: url('../img/11-03.jpg');
-  background-size: cover;
+  // background-image: url('../img/11-03.jpg');
   border-radius: 50%;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
+  .target-inside {
+    border-radius: 50%;
+    width: 95%;
+    height: 95%;
+    background-image: url('../img/11-03.jpg');
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
 }
 // .target span {
 //   font-size: 50px;

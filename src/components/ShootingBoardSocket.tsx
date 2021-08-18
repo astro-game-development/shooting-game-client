@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Howl } from 'howler';
 import { useDocumentEvent, useWindowEvent } from '../hooks/useEvent';
 import io from 'socket.io-client';
@@ -38,7 +38,7 @@ var soundBG = new Howl({
 });
 
 export const ShootingBoardSocket = ({ location }) => {
-  const [bgMusic, setBgMusic] = useState(false);
+  const [bgMusic, setBgMusic] = useState(true);
   const [name, setName] = useState<any>('');
   const [users, setUsers] = useState<any>([]);
   const [room, setRoom] = useState<any>('');
@@ -97,7 +97,7 @@ export const ShootingBoardSocket = ({ location }) => {
     const _id = e;
     setEffect(true);
     setEffect(false);
-    // setshake(true);
+    setshake(true);
     if (bgMusic) {
       sound.volume(0.05);
       sound.play();
